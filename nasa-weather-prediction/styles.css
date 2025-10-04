@@ -41,6 +41,11 @@ body {
     font-size: 1.1rem;
 }
 
+.map-inner, #map {
+    width: 100%;
+    height: 400px;
+}
+
 .side-panel {
     width: var(--panel-width);
     min-width: 240px;
