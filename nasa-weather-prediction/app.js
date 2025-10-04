@@ -8,35 +8,37 @@ document.addEventListener('DOMContentLoaded', function () {
     const rangeGroup = document.getElementById('rangeDateGroup');
     const predictBtn = document.getElementById('predictBtn');
     // Vars
-<<<<<<< Updated upstream
-    const startDate = "20000101";
-    const endDate = getCurrentDateYYYYMMDD();
-    //var latitude = 0.0;
-    //var longitude = 0.0;
-=======
     const startDate = "20000101"; // 2000/01/01
     //const endDate = getCurrentDateYYYYMMDD(); // today
     const endDate = "20251001"; // today
->>>>>>> Stashed changes
 
-    let latitude = 45.5;
-    let longitude = -73.56;
 
+    var latitude = 45.5;
+    var longitude = -73.56;
+    console.log("Initial coords: ", latitude, longitude);
+
+    // Initialize the map
     const map = L.map('map').setView([latitude, longitude], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-   
-     let marker = L.marker([latitude, longitude], { draggable: true }).addTo(map);
 
-     map.on('click', function (e) {
+
+    let marker = L.marker([latitude, longitude], { draggable: true }).addTo(map);
+
+    // Update lat/lon on map click
+    map.on('click', function (e) {
         latitude = e.latlng.lat;
         longitude = e.latlng.lng;
+        console.log("Map clicked at: ", latitude, longitude);
         marker.setLatLng([latitude, longitude]);
     });
 
+    // Update lat/lon on marker drag end
     marker.on('dragend', function (e) {
         const pos = marker.getLatLng();
         latitude = pos.lat;
         longitude = pos.lng;
+        console.log("Map dragged at: ", latitude, longitude);
+
     });
 
     /**
@@ -68,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const start = document.getElementById('startDate').value;
             const end = document.getElementById('endDate').value;
             console.log('Predict range', { start, end });
-
             alert(`Predict for range:\nStart: ${start || '(empty)'}\nEnd: ${end || '(empty)'}`);
         } else {
             const date = document.getElementById('singleDate').value;
@@ -77,9 +78,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         const data = await fetchData(startDate, endDate, latitude, longitude);
         const dailyTemps = data.properties.parameter.T2M_MAX;
+
+        ////filter the array so it only includes the dates by the user
+        // if (mode === 'range') then filter by start and end
+        // if single then we filter by date (for example, we ignore the year, and get all values for that month and day, across all years)
+
+
         console.log(dailyTemps);
 
         console.log(data);
+        console.log(dailyTemps["20000101"]); // should log the max temp for Jan 1, 2000
+
     });
 });
 
