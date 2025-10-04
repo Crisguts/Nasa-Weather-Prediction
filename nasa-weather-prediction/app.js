@@ -8,10 +8,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const rangeGroup = document.getElementById('rangeDateGroup');
     const predictBtn = document.getElementById('predictBtn');
     // Vars
+<<<<<<< Updated upstream
     const startDate = "20000101";
     const endDate = getCurrentDateYYYYMMDD();
     //var latitude = 0.0;
     //var longitude = 0.0;
+=======
+    const startDate = "20000101"; // 2000/01/01
+    //const endDate = getCurrentDateYYYYMMDD(); // today
+    const endDate = "20251001"; // today
+>>>>>>> Stashed changes
 
     let latitude = 45.5;
     let longitude = -73.56;
@@ -57,10 +63,12 @@ document.addEventListener('DOMContentLoaded', function () {
     predictBtn.addEventListener('click', async function (e) {
         e.preventDefault();
         const mode = modeSelect.value;
+
         if (mode === 'range') {
             const start = document.getElementById('startDate').value;
             const end = document.getElementById('endDate').value;
             console.log('Predict range', { start, end });
+
             alert(`Predict for range:\nStart: ${start || '(empty)'}\nEnd: ${end || '(empty)'}`);
         } else {
             const date = document.getElementById('singleDate').value;
@@ -68,9 +76,13 @@ document.addEventListener('DOMContentLoaded', function () {
             alert(`Predict for date:\n${date || '(empty)'}`);
         }
         const data = await fetchData(startDate, endDate, latitude, longitude);
+        const dailyTemps = data.properties.parameter.T2M_MAX;
+        console.log(dailyTemps);
+
         console.log(data);
     });
 });
+
 
 
 /**
@@ -90,15 +102,15 @@ async function fetchData(startDate, endDate, latitude, longitude) {
 
 }
 
-/**
- * Get the current date in YYYYMMDD format.
- * @returns {string} Current date in YYYYMMDD format.
- */
-function getCurrentDateYYYYMMDD() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}${month}${day}`;
-}
+// /**
+//  * Get the current date in YYYYMMDD format.
+//  * @returns {string} Current date in YYYYMMDD format.
+//  */
+// function getCurrentDateYYYYMMDD() {
+//     const now = new Date();
+//     const year = now.getFullYear();
+//     const month = String(now.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+//     const day = String(now.getDate()).padStart(2, '0');
+//     return `${year}${month}${day}`;
+// }
 
