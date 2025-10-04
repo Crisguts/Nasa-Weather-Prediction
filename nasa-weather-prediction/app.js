@@ -10,8 +10,29 @@ document.addEventListener('DOMContentLoaded', function () {
     // Vars
     const startDate = "20000101";
     const endDate = getCurrentDateYYYYMMDD();
-    var latitude = 0.0;
-    var longitude = 0.0;
+    //var latitude = 0.0;
+    //var longitude = 0.0;
+
+    let latitude = 45.5;
+    let longitude = -73.56;
+
+    const map = L.map('map').setView([latitude, longitude], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+   
+     let marker = L.marker([latitude, longitude], { draggable: true }).addTo(map);
+
+     map.on('click', function (e) {
+        latitude = e.latlng.lat;
+        longitude = e.latlng.lng;
+        marker.setLatLng([latitude, longitude]);
+    });
+
+    marker.on('dragend', function (e) {
+        const pos = marker.getLatLng();
+        latitude = pos.lat;
+        longitude = pos.lng;
+    });
+
 
     function updateMode() {
         const mode = modeSelect.value;
