@@ -1,6 +1,7 @@
-// app.js - minimal JS to toggle between single date and range inputs
-// app.js - minimal JS to toggle between single date and range inputs
-
+// -----------------------------------------------------------------------------
+// NASA Weather Prediction - app.js
+// Sections: Initialization, Map, UI, Event handlers, Filters, API
+// -----------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', function () {
     const data = {
     20000202: -12.49,
@@ -21,20 +22,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const singleGroup = document.getElementById('singleDateGroup');
     const rangeGroup = document.getElementById('rangeDateGroup');
     const predictBtn = document.getElementById('predictBtn');
-    // Vars
+
+<<<<<<< Updated upstream
+=======
+    //Variables 
     const startDate = "20000101"; // 2000/01/01
-    //const endDate = getCurrentDateYYYYMMDD(); // today
     const endDate = "20251001"; // today
 
+>>>>>>> Stashed changes
     var latitude = 45.5;
     var longitude = -73.56;
-    console.log("Initial coords: ", latitude, longitude);
+    console.log("Initial coords: ", latitude, longitude); //default : Montreal
 
+
+
+
+    //* MAP CODE -------------------------------------------
     // Initialize the map
     const map = L.map('map').setView([latitude, longitude], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-
+    // Map marker, default montreal, draggable
     let marker = L.marker([latitude, longitude], { draggable: true }).addTo(map);
 
     // Update lat/lon on map click
@@ -45,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
         marker.setLatLng([latitude, longitude]);
     });
 
-    // Update lat/lon on marker drag end
+    // Update lat/lon on marker drag (last drop)
     marker.on('dragend', function (e) {
         const pos = marker.getLatLng();
         latitude = pos.lat;
@@ -53,7 +61,12 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log("Map dragged at: ", latitude, longitude);
 
     });
+    //* -----------------------------------------------------
 
+
+
+
+    //* DROPDOWN CODE -------------------------------------------
     /**
      * Update the visibility of date input groups based on the selected mode. (show only one input, or 2)
      */
@@ -70,6 +83,20 @@ document.addEventListener('DOMContentLoaded', function () {
     // Event listeners
     modeSelect.addEventListener('change', updateMode); // toggle
     updateMode(); // initial mode setup
+    //* -----------------------------------------------------
+
+    // Spinner overlay helpers (use the HTML overlay in index)
+    function showSpinnerOverlay() {
+        const overlay = document.getElementById('spinnerOverlay');
+        if (overlay) overlay.style.display = 'flex';
+    }
+
+    function hideSpinnerOverlay() {
+        const overlay = document.getElementById('spinnerOverlay');
+        if (overlay) overlay.style.display = 'none';
+    }
+
+
 
 
     /**
@@ -78,34 +105,120 @@ document.addEventListener('DOMContentLoaded', function () {
     predictBtn.addEventListener('click', async function (e) {
         e.preventDefault();
         const mode = modeSelect.value;
+        let date = null;
+        let start = null;
+        let end = null;
 
         //
 
         if (mode === 'range') {
-            const start = document.getElementById('startDate').value;
-            const end = document.getElementById('endDate').value;
+            // assign to outer-scoped start/end so later code can use them
+            start = document.getElementById('startDate').value;
+            end = document.getElementById('endDate').value;
+            // minimal validation: require both start and end
+            if (!start || !end) {
+                alert('Please enter both start and end dates.');
+                return;
+            }
             console.log('Predict range', { start, end });
-            alert(`Predict for range:\nStart: ${start || '(empty)'}\nEnd: ${end || '(empty)'}`);
         } else {
-            const date = document.getElementById('singleDate').value;
+            date = document.getElementById('singleDate').value;
+            // minimal validation: require date
+            if (!date) {
+                alert('Please enter a date.');
+                return;
+            }
             console.log('Predict single', { date });
-            alert(`Predict for date:\n${date || '(empty)'}`);
         }
+<<<<<<< Updated upstream
         const data = await fetchData(startDate, endDate, latitude, longitude);
         const dailyTemps = data.properties.parameter.T2M_MAX;
         console.log("test");
         ////filter the array so it only includes the dates by the user
         // if (mode === 'range') then filter by start and end
         // if single then we filter by date (for example, we ignore the year, and get all values for that month and day, across all years)
+=======
 
+        // Show spinner overlay
+        showSpinnerOverlay();
+>>>>>>> Stashed changes
 
-        console.log(dailyTemps);
+        // Fetch data from NASA POWER API
+        const dailyTemps = await fetchData(startDate, endDate, latitude, longitude);
 
-        console.log(data);
-        console.log(dailyTemps["20000101"]); // should log the max temp for Jan 1, 2000
+        //// filter the object so it only includes the dates by the user
+        let filteredTemps = [];
+        if (mode === 'range') {
+            filteredTemps = filterObjectByRange(start, end, dailyTemps);
+        } else {
+            filteredTemps = filterObjectByDate(date, dailyTemps);
+        }
+        console.log('Filtered data:', filteredTemps);
+        console.log(`Filtered count: ${filteredTemps.length}`);
 
+        // NOW WE CAN COMPUTER THE STATS ON filteredTemps ARRAY AND DISPLAY THEM
+
+        // Hide spinner overlay
+        hideSpinnerOverlay();
+
+        // This is the giant array of daily max temps from 2000 to 2024 for the given lat/lon
+
+        //console.log(dailyTemps["20000101"]); // should log the max temp for Jan 1, 2000
+        // console.log("Filtered data: ", filterArrayByDate(date, dailyTemps)); //example usage
     });
 });
+
+
+
+//* FILTER HELPERS CODE -------------------------------------------
+/**
+ * Filter the dailtyTemps object to return an array of temps matching the month and day of the given date, across all years.
+ * @param {*} date 
+ * @param {*} dailyTemps 
+ * @returns 
+ */
+function filterObjectByDate(date, dailyTemps) {
+    const filteredTemps = [];
+    const target = date.replace(/-/g, '').slice(4); // convert YYYY-MM-DD to MMDD
+
+    for (const key in dailyTemps) {
+        if (key.slice(4) === target) { // compares MMDD to MMDD
+            filteredTemps.push(dailyTemps[key]);
+        }
+    }
+    return filteredTemps;
+}
+
+/**
+ * Filter the dailyTemps object to return an array of temps matching the month and day of the given date range, across all years.
+ * @param {*} start 
+ * @param {*} end 
+ * @param {*} dailyTemps 
+ * @returns 
+ */
+function filterObjectByRange(start, end, dailyTemps) {
+    let filteredTemps = [];
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1; // Month is 0-indexed, so add 1
+        const day = currentDate.getDate();
+
+        // Format as YYYY-MM-DD for the method
+        const formattedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+        filteredTemps = filteredTemps.concat(filterObjectByDate(formattedDate, dailyTemps));
+        currentDate.setDate(currentDate.getDate() + 1); // increment by one day
+    }
+    return filteredTemps;
+}
+//* -----------------------------------------------------
+
+
 
 
 
@@ -122,6 +235,7 @@ async function fetchData(startDate, endDate, latitude, longitude) {
     const response = await fetch(request);
     const jsonData = await response.json();
     // console.log(jsonData);
+<<<<<<< Updated upstream
     return jsonData;
 }
 
@@ -293,3 +407,10 @@ function linearRegressionTest() {
 //     return `${year}${month}${day}`;
 // }
 
+=======
+
+    return jsonData.properties.parameter.T2M_MAX;
+
+}
+
+>>>>>>> Stashed changes

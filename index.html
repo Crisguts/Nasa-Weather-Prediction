@@ -3,19 +3,32 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>NASA Weather Prediction</title>
+    <title>NASA Weather</title>
     <!-- Bootstrap CSS (optional, helps with layout) -->
+    <!-- Use the background image as a favicon (browser will scale) -->
+    <link rel="icon" href="/spacebg.jpg" type="image/jpeg">
+    <link rel="icon" href="/spacebg.jpg" type="image/png">
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet" integrity="sha384-" crossorigin="anonymous">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
 </head>
 <body>
     <header class="py-4 text-center">
-        <h1 class="app-title">NASA Weather Prediction</h1>
+        <h1 class="app-title">NASA Weather Prediction Tool</h1>
+        <p class="intro-description">Ever wanted to plan a trip in advance but
+            the weather forecast couldn't cover that far ahead? Use our NASA
+            data-powered weather predictor. We use statistical data from the
+            last 30 years and climate-change-aware adjustments to give an
+            approximation of what Earth is up to on that day or during those
+            days.</p>
     </header>
+    <!-- Full-screen spinner overlay (hidden by default) -->
+    <div id="spinnerOverlay" style="display: none;">
+        <img id="spinner" src="./spinner.gif" alt="Loading" />
+    </div>
     <main class="container main-area">
         <div class="row justify-content-center">
             <div class="col-12 col-lg-10">
@@ -26,7 +39,8 @@
                         <div id="map-container"
                             class="flex-fill map-placeholder"
                             aria-label="Map placeholder">
-                            <div id="map" class="map-inner">Map will be here (Leaflet)
+                            <div id="map" class="map-inner">Map will be here
+                                (Leaflet)
                             </div>
                         </div>
                         <!-- Side panel -->
@@ -64,9 +78,54 @@
                         </aside>
                     </div>
                 </div>
+                <br>
+                <div class="glass-panel">
+                    <div id="results" class="p-3">
+                        <h2>Results</h2>
+                        <div id="resultsContent">No results yet. Select a date
+                            and location, then click "Predict".</div>
+                    </div>
+                </div>
+                <br>
+                <div class="glass-panel">
+                    <div id="results" class="p-3">
+                        <h2>Behind the Scenes</h2>
+                        <div id="behindScenesContent">We combine NASA's
+                            historical
+                            daily climate records (POWER API), satellite-derived
+                            observations, and multi-year climatology to produce
+                            short-term temperature estimates. The system uses
+                            lightweight statistical models that learn local
+                            seasonal patterns and compare them to the recent
+                            historical distribution to produce a prediction and
+                            a simple confidence score. Note: this is an
+                            experimental, data-driven estimate — it does not
+                            replace operational forecasts and has limited skill
+                            for very long-range dates or locations with sparse
+                            historical records. It does NOT predict the future
+                            😅</div>
+                    </div>
+                </div>
+            </div>
+    </main>
+    <footer class="site-footer-wrap mt-4">
+        <div class="glass-panel site-footer-content p-3 mx-auto">
+            <div
+                class="d-flex flex-column flex-md-row justify-content-between align-items-center w-100 gap-3">
+                <div>
+                    <h3 class="mb-0">2025 NASA Space Apps Challenge: Will It
+                        Rain On My Parade?</h3>
+                </div>
+                <div class="text-md-end">
+                    <div class="small mb-0">Project · <a
+                            href="https://github.com/Crisguts/Nasa-Weather-Prediction"
+                            target="_blank" rel="noopener noreferrer"
+                            class="text-light">View on GitHub</a></div>
+                </div>
             </div>
         </div>
-    </main>
+    </footer>
+    <!-- description moved into header -->
     <script src="app.js" defer></script>
 </body>
 </html>
