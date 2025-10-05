@@ -1,7 +1,6 @@
 // -----------------------------------------------------------------------------
 // NASA Weather Prediction - app.js
 // Main application logic: UI initialization, event handlers, and API calls
-// Dependencies: filters.js, math.js, charts.js
 // -----------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -71,6 +70,9 @@ document.addEventListener('DOMContentLoaded', function () {
     updateMode(); // initial mode setup
     //* -----------------------------------------------------
 
+
+
+    //* SPINNER CODE -------------------------------------------
     // Spinner overlay helpers (use the HTML overlay in index)
     function showSpinnerOverlay() {
         const overlay = document.getElementById('spinnerOverlay');
@@ -81,10 +83,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const overlay = document.getElementById('spinnerOverlay');
         if (overlay) overlay.style.display = 'none';
     }
+    //* -----------------------------------------------------
 
 
 
-
+    //* PREDICT BUTTON CODE -------------------------------------------
     /**
      * Handle the predict button click event.
      */
@@ -95,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function () {
         let start = null;
         let end = null;
 
-        //
 
         if (mode === 'range') {
             // assign to outer-scoped start/end so later code can use them
@@ -136,13 +138,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 filteredTemps = filterObjectByDate(date, temps);
                 filteredRain = filterObjectByDate(date, rain);
             }
-
             console.log('Filtered Temps:', filteredTemps); // test
             console.log('Filtered Rain:', filteredRain); // test
 
 
             // NOW WE CAN COMPUTER THE STATS ON filteredTemps ARRAY 
-            const avgTemp = filteredTemps.reduce((a, b) => a + b, 0) / filteredTemps.length || 0;
+            // average temp for that date or range
+            const avgTemp = filteredTemps.reduce((a, b) => a + b, 0) / filteredTemps.length || 0; //adds all values, divides by count, or 0 if empty
 
             // progression for slope/trend on the whole dataset 
             let predictedTemp = null;
@@ -150,11 +152,12 @@ document.addEventListener('DOMContentLoaded', function () {
             let stdev = 0;
             let rainChance = 0;
 
+            //if we work with one date/day
             if (mode === 'single') {
                 // Use linear regression to project the temp for that exact date
-                predictedTemp = calcLinearRegression(temps, date);
+                predictedTemp = calcLinearRegression(temps, date); //math.js file
 
-                // Parse YYYYMMDD to get year difference
+                // Parse YYYYMMDD to get year difference (to add linear adjustment per year)
                 const targetYear = parseInt(date.substring(0, 4));
                 const yearDiff = targetYear - 2025;
 
@@ -216,9 +219,12 @@ document.addEventListener('DOMContentLoaded', function () {
         // console.log("Filtered data: ", filterArrayByDate(date, dailyTemps)); //example usage
     });
 });
+//* -----------------------------------------------------
 
 
 
+
+//* FILTERS API CODE -------------------------------------------
 /**
  * Fetch weather data from NASA's POWER API.
  * @param {String} startDate - Start date in YYYYMMDD format
@@ -232,10 +238,11 @@ async function fetchData(startDate, endDate, latitude, longitude) {
     const response = await fetch(request);
     const jsonData = await response.json();
     return {
-        temps: jsonData.properties.parameter.T2M_MAX,
-        rain: jsonData.properties.parameter.PRECTOTCORR
+        temps: jsonData.properties.parameter.T2M_MAX, //temp
+        rain: jsonData.properties.parameter.PRECTOTCORR //rain
     }
 }
+//* -----------------------------------------------------
 
 
 

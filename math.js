@@ -3,18 +3,23 @@
 // Mathematical and statistical functions for climate predictions
 // -----------------------------------------------------------------------------
 
+
+
 /**
  * Calculate linear regression for the given data and search date.
+ * Example: If the trend is +0.08°C/year and historical average is 15°C, by 2026 it predicts 15.08°C
+ * 
  * @param {Object} data - Object with YYYYMMDD keys and temperature values
  * @param {String} searchStringDate - Target date in YYYYMMDD format
  * @returns {Number} Predicted temperature value
  */
-function calcLinearRegression(data, searchStringDate) {
-    const { x, y } = extractXY(data);
+function calcLinearRegression(data, searchStringDate) { //data being all temps from 2000-2025
+    const { x, y } = extractXY(data); //x years and y temps arrays
 
     // Extract year from YYYYMMDD search date
     const searchYear = parseInt(searchStringDate.substring(0, 4));
     console.log("Search year:", searchYear);
+
 
     // Compute Linear Regression (slope + intercept)
     function linearRegression(x, y) {
@@ -33,7 +38,7 @@ function calcLinearRegression(data, searchStringDate) {
         const m = num / den;
         const b = meanY - m * meanX;
 
-        return { slope: m, intercept: b };
+        return { slope: m, intercept: b }; // slope is how steep the trend is, C per year, intercept is where it crosses Y axis
     }
 
     const { slope, intercept } = linearRegression(x, y);

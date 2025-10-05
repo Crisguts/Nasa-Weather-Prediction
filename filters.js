@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // NASA Weather Prediction - filters.js
-// Data filtering functions for date ranges and historical data
+// Data filtering functions for date ranges and historical data (based on date range or single date)
 // -----------------------------------------------------------------------------
 
 /**
@@ -29,6 +29,8 @@ function filterObjectByDate(date, dailyTemps) {
         }
     }
     console.log(`filterObjectByDate: found ${matchCount} matches out of ${Object.keys(dailyTemps).length} total entries`);
+
+    //if date is october 12, then it returns an array of temperatures for October 12 from every year (2000-2024):
     return filteredTemps;
 }
 
@@ -62,6 +64,9 @@ function filterObjectByRange(start, end, dailyTemps) {
             filtered.push(dailyTemps[key]);
         }
     }
+
+    //if start date is october 22, end is 32, then it returns an array of temperatures for October 22-31 from every year (2000-2024):
+
 
     return filtered;
 }
