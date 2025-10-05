@@ -13,7 +13,7 @@ body {
     margin: 0;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     color: #e6eef8;
-    background: url('/assets/spacebg.jpg') center/cover fixed no-repeat;
+    background: url('./assets/spacebg.jpg') center/cover fixed no-repeat;
 }
 
 /* layout */
