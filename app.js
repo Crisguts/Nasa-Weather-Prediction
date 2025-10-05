@@ -1,20 +1,9 @@
 // -----------------------------------------------------------------------------
 // NASA Weather Prediction - app.js
-// Sections: Initialization, Map, UI, Event handlers, Filters, API
+// Main application logic: UI initialization, event handlers, and API calls
+// Dependencies: filters.js, math.js, charts.js
 // -----------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', function () {
-    const data = {
-    20000202: -12.49,
-    20000203: -14.06,
-    20000204: -11.72,
-    20000205: -6,
-    20000206: -3.75,
-    20000207: -3.82,
-    20000208: -8.84,
-    20000209: 0.76
-    };
-
-    calcLinearRegression(data, "2000-02-02");
 
     console.log("DOM loaded");
     // Elements
@@ -23,13 +12,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const rangeGroup = document.getElementById('rangeDateGroup');
     const predictBtn = document.getElementById('predictBtn');
 
-<<<<<<< Updated upstream
-=======
     //Variables 
     const startDate = "20000101"; // 2000/01/01
     const endDate = "20251001"; // today
 
->>>>>>> Stashed changes
     var latitude = 45.5;
     var longitude = -73.56;
     console.log("Initial coords: ", latitude, longitude); //default : Montreal
@@ -116,53 +102,116 @@ document.addEventListener('DOMContentLoaded', function () {
             start = document.getElementById('startDate').value;
             end = document.getElementById('endDate').value;
             // minimal validation: require both start and end
-            if (!start || !end) {
-                alert('Please enter both start and end dates.');
-                return;
-            }
-            console.log('Predict range', { start, end });
+            if (!start || !end) return alert('Please enter both start and end dates.');
+            console.log('Predict range', { start, end }); // test
         } else {
             date = document.getElementById('singleDate').value;
             // minimal validation: require date
-            if (!date) {
-                alert('Please enter a date.');
-                return;
-            }
-            console.log('Predict single', { date });
+            if (!date) return alert('Please enter a date.');
+            console.log('Predict single', { date }); // test
         }
-<<<<<<< Updated upstream
-        const data = await fetchData(startDate, endDate, latitude, longitude);
-        const dailyTemps = data.properties.parameter.T2M_MAX;
-        console.log("test");
-        ////filter the array so it only includes the dates by the user
-        // if (mode === 'range') then filter by start and end
-        // if single then we filter by date (for example, we ignore the year, and get all values for that month and day, across all years)
-=======
 
         // Show spinner overlay
         showSpinnerOverlay();
->>>>>>> Stashed changes
 
-        // Fetch data from NASA POWER API
-        const dailyTemps = await fetchData(startDate, endDate, latitude, longitude);
+        try {
+            // Fetch data from NASA POWER API
+            const { temps, rain } = await fetchData(startDate, endDate, latitude, longitude);
 
-        //// filter the object so it only includes the dates by the user
-        let filteredTemps = [];
-        if (mode === 'range') {
-            filteredTemps = filterObjectByRange(start, end, dailyTemps);
-        } else {
-            filteredTemps = filterObjectByDate(date, dailyTemps);
+            console.log('Raw temps object:', temps);
+            console.log('Sample temps keys:', Object.keys(temps).slice(0, 5));
+            console.log('Raw rain object:', rain);
+
+            //// filter the object so it only includes the dates by the user
+            let filteredTemps = [];
+            let filteredRain = [];
+
+            if (mode === 'range') {
+                start = start.replace(/-/g, ''); // remove dashes
+                end = end.replace(/-/g, ''); // remove dashes
+                filteredTemps = filterObjectByRange(start, end, temps);
+                filteredRain = filterObjectByRange(start, end, rain);
+            } else {
+                date = date.replace(/-/g, ''); // remove dashes
+                filteredTemps = filterObjectByDate(date, temps);
+                filteredRain = filterObjectByDate(date, rain);
+            }
+
+            console.log('Filtered Temps:', filteredTemps); // test
+            console.log('Filtered Rain:', filteredRain); // test
+
+
+            // NOW WE CAN COMPUTER THE STATS ON filteredTemps ARRAY 
+            const avgTemp = filteredTemps.reduce((a, b) => a + b, 0) / filteredTemps.length || 0;
+
+            // progression for slope/trend on the whole dataset 
+            let predictedTemp = null;
+            let adjustedTemp = null;
+            let stdev = 0;
+            let rainChance = 0;
+
+            if (mode === 'single') {
+                // Use linear regression to project the temp for that exact date
+                predictedTemp = calcLinearRegression(temps, date);
+
+                // Parse YYYYMMDD to get year difference
+                const targetYear = parseInt(date.substring(0, 4));
+                const yearDiff = targetYear - 2025;
+
+                // Standard deviation for confidence interval
+                stdev = Math.sqrt(
+                    filteredTemps.map(v => Math.pow(v - avgTemp, 2))
+                        .reduce((a, b) => a + b, 0) / filteredTemps.length
+                );
+
+                // Combine the regression trend with variability adjustment
+                adjustedTemp = predictedTemp + stdev * 0.1 * yearDiff;
+
+                // Chance of rain — percent of rainy days near that date
+                const rainyDays = filteredRain.filter(v => v > 0.5).length;
+                rainChance = Math.round((rainyDays / filteredRain.length) * 100);
+
+                // Validate results before display
+                const tempDisplay = !isNaN(adjustedTemp) ? adjustedTemp.toFixed(1) : avgTemp.toFixed(1);
+                const stdevDisplay = !isNaN(stdev) ? stdev.toFixed(1) : '?';
+
+                const result = document.getElementById('resultsContent');
+                result.innerHTML = '';
+                result.innerHTML = `
+                    <h3>Weather Prediction for ${date}</h3>
+                    <p>Predicted High: ${tempDisplay}°C ± ${stdevDisplay}°C</p>
+                    <p>Chance of Rain: ${rainChance}%</p>
+                `;
+
+                // Create chart with historical data
+                createTemperatureChart(filteredTemps, predictedTemp, avgTemp);
+
+            } else if (mode === 'range') {
+                // For range mode, use average directly (no regression)
+                const rainyDays = filteredRain.filter(v => v > 0.5).length;
+                rainChance = Math.round((rainyDays / filteredRain.length) * 100);
+
+
+                const result = document.getElementById('resultsContent');
+                result.innerHTML = '';
+                result.innerHTML = `
+                    <h3>Weather Prediction for ${start} → ${end}</h3>
+                    <p>Average High: ${avgTemp.toFixed(1)}°C</p>
+                    <p>Chance of Rain: ${rainChance}%</p>
+                `;
+
+                // Create histogram chart for range data
+                createRangeChart(filteredTemps, avgTemp);
+            }
+
+            // Hide spinner overlay once done
+            hideSpinnerOverlay();
+
+        } catch (error) {
+            console.error("Error during prediction:", error);
+            alert("An error occurred while fetching data or processing the prediction. Please try again.");
+            hideSpinnerOverlay();
         }
-        console.log('Filtered data:', filteredTemps);
-        console.log(`Filtered count: ${filteredTemps.length}`);
-
-        // NOW WE CAN COMPUTER THE STATS ON filteredTemps ARRAY AND DISPLAY THEM
-
-        // Hide spinner overlay
-        hideSpinnerOverlay();
-
-        // This is the giant array of daily max temps from 2000 to 2024 for the given lat/lon
-
         //console.log(dailyTemps["20000101"]); // should log the max temp for Jan 1, 2000
         // console.log("Filtered data: ", filterArrayByDate(date, dailyTemps)); //example usage
     });
@@ -170,247 +219,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-//* FILTER HELPERS CODE -------------------------------------------
-/**
- * Filter the dailtyTemps object to return an array of temps matching the month and day of the given date, across all years.
- * @param {*} date 
- * @param {*} dailyTemps 
- * @returns 
- */
-function filterObjectByDate(date, dailyTemps) {
-    const filteredTemps = [];
-    const target = date.replace(/-/g, '').slice(4); // convert YYYY-MM-DD to MMDD
-
-    for (const key in dailyTemps) {
-        if (key.slice(4) === target) { // compares MMDD to MMDD
-            filteredTemps.push(dailyTemps[key]);
-        }
-    }
-    return filteredTemps;
-}
-
-/**
- * Filter the dailyTemps object to return an array of temps matching the month and day of the given date range, across all years.
- * @param {*} start 
- * @param {*} end 
- * @param {*} dailyTemps 
- * @returns 
- */
-function filterObjectByRange(start, end, dailyTemps) {
-    let filteredTemps = [];
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    let currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth() + 1; // Month is 0-indexed, so add 1
-        const day = currentDate.getDate();
-
-        // Format as YYYY-MM-DD for the method
-        const formattedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-
-        filteredTemps = filteredTemps.concat(filterObjectByDate(formattedDate, dailyTemps));
-        currentDate.setDate(currentDate.getDate() + 1); // increment by one day
-    }
-    return filteredTemps;
-}
-//* -----------------------------------------------------
-
-
-
-
-
 /**
  * Fetch weather data from NASA's POWER API.
- * @param {*} startDate 
- * @param {*} endDate 
- * @param {*} latitude 
- * @param {*} longitude 
- * @returns 
+ * @param {String} startDate - Start date in YYYYMMDD format
+ * @param {String} endDate - End date in YYYYMMDD format
+ * @param {Number} latitude - Latitude coordinate
+ * @param {Number} longitude - Longitude coordinate
+ * @returns {Object} Object containing temps and rain data
  */
 async function fetchData(startDate, endDate, latitude, longitude) {
-    const request = new Request(`https://power.larc.nasa.gov/api/temporal/daily/point?start=${startDate}&end=${endDate}&latitude=${latitude}&longitude=${longitude}&parameters=T2M_MAX&community=RE&format=JSON`);
+    const request = new Request(`https://power.larc.nasa.gov/api/temporal/daily/point?parameters=T2M_MAX,PRECTOTCORR&community=RE&longitude=${longitude}&latitude=${latitude}&start=${startDate}&end=${endDate}&format=JSON`);
     const response = await fetch(request);
     const jsonData = await response.json();
-    // console.log(jsonData);
-<<<<<<< Updated upstream
-    return jsonData;
+    return {
+        temps: jsonData.properties.parameter.T2M_MAX,
+        rain: jsonData.properties.parameter.PRECTOTCORR
+    }
 }
 
 
 
-function calcLinearRegression(data, searchStringDate) {
-
-    const { x, y } = extractXY(data);
-
-    // Convert search date
-    const searchDate = new Date(searchStringDate);
-    const searchX = searchDate.getTime();
-    console.log("Search date (epoch):", searchX);
-
-    // Convert dates to numeric (epoch time)
-    //const x = dates.map(d => d.getTime()); // milliseconds since Jan 1, 1970
-
-    // Compute Linear Regression (slope + intercept)
-    function linearRegression(x, y) {
-    const n = x.length;
-    const meanX = x.reduce((a,b) => a+b) / n;
-    const meanY = y.reduce((a,b) => a+b) / n;
-
-    let num = 0;
-    let den = 0;
-
-    for (let i = 0; i < n; i++) {
-        num += (x[i] - meanX) * (y[i] - meanY);
-        den += (x[i] - meanX) ** 2;
-    }
-
-    const m = num / den;
-    const b = meanY - m * meanX;
-
-    return { slope: m, intercept: b };
-    }
-
-    const { slope, intercept } = linearRegression(x, y);
-    console.log("Slope:", slope);
-    console.log("Intercept:", intercept);
-
-    // Predict from search date
-    const predictedValue = slope * searchX + intercept;
-    console.log(`Predicted value for ${searchStringDate}:`, predictedValue);
-
-    return predictedValue;
-}
-
-
-
-
-
-function extractXY(dataObj) {
-  const x = [];
-  const y = [];
-
-  for (const [key, value] of Object.entries(dataObj)) {
-    // Parse YYYYMMDD string into a Date
-    const year = parseInt(key.substring(0, 4), 10);
-    const month = parseInt(key.substring(4, 6), 10) - 1; // JS months = 0-11
-    const day = parseInt(key.substring(6, 8), 10);
-
-    const date = new Date(year, month, day);
-
-    x.push(date.getTime()); // numeric for regression
-    y.push(value);
-  }
-
-  return { x, y };
-}
-
-
-function linearRegressionTest() {
-    const y = [1.0, 2.0, 3.5, 4.2]; // floats
-    const dates = [
-    new Date("2020-01-01"),
-    new Date("2020-01-10"),
-    new Date("2020-01-20"),
-    new Date("2020-02-01")
-    ];
-
-    //test search values
-    const searchDate = new Date("2020-01-15");
-    //const searchDate = new Date("2020-03-20");
-    const searchX = searchDate.getTime();
-    console.log("Search date (epoch):", searchX);
-
-
-    //1. Convert dates to numeric (epoch time)
-    const x = dates.map(d => d.getTime()); // milliseconds since Jan 1, 1970
-
-    //2. Compute Linear Regression (slope + intercept)
-    function linearRegression(x, y) {
-    const n = x.length;
-    const meanX = x.reduce((a,b) => a+b) / n;
-    const meanY = y.reduce((a,b) => a+b) / n;
-
-    let num = 0;
-    let den = 0;
-
-    for (let i = 0; i < n; i++) {
-        num += (x[i] - meanX) * (y[i] - meanY);
-        den += (x[i] - meanX) ** 2;
-    }
-
-    const m = num / den;
-    const b = meanY - m * meanX;
-
-    return { slope: m, intercept: b };
-    }
-
-    const { slope, intercept } = linearRegression(x, y);
-    console.log("Slope:", slope);
-    console.log("Intercept:", intercept);
-
-
-    //3. Predict & Convert Back to Dates
-    function predict(date) {
-        const xVal = date.getTime();
-        return slope * xVal + intercept;
-    }
-
-    // Example: predict for Feb 15, 2020
-    const pred = predict(new Date("2020-01-30"));
-    console.log("Prediction:", pred);
-
-    // Convert back into date objects for plotting or display
-    // const predictedDates = yPred.map(val => new Date(val));
-    // console.log(predictedDates);
-}
-
-
-
-
-
-
-    // //4. Plott with chart js
-    // const data = {
-    // datasets: [
-    //     {
-    //     label: "Data",
-    //     data: x.map((xi, i) => ({ x: xi, y: dates[i] })),
-    //     showLine: false,
-    //     pointBackgroundColor: "blue"
-    //     },
-    //     {
-    //     label: "Regression Line",
-    //     data: x.map((xi, i) => ({ x: xi, y: predictedDates[i] })),
-    //     borderColor: "red",
-    //     showLine: true,
-    //     fill: false
-    //     }
-    // ]
-    // };
-
-
-
-
-
-// /**
-//  * Get the current date in YYYYMMDD format.
-//  * @returns {string} Current date in YYYYMMDD format.
-//  */
-// function getCurrentDateYYYYMMDD() {
-//     const now = new Date();
-//     const year = now.getFullYear();
-//     const month = String(now.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
-//     const day = String(now.getDate()).padStart(2, '0');
-//     return `${year}${month}${day}`;
-// }
-
-=======
-
-    return jsonData.properties.parameter.T2M_MAX;
-
-}
-
->>>>>>> Stashed changes

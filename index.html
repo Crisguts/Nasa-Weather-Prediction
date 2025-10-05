@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>NASA Weather</title>
+    <title>NASA Climate</title>
     <!-- Bootstrap CSS (optional, helps with layout) -->
     <!-- Use the background image as a favicon (browser will scale) -->
     <link rel="icon" href="/spacebg.jpg" type="image/jpeg">
@@ -14,13 +14,16 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
 </head>
 <body>
     <header class="py-4 text-center">
-        <h1 class="app-title">NASA Weather Prediction Tool</h1>
+        <h1 class="app-title">NASA Climate Prediction Tool</h1>
         <p class="intro-description">Ever wanted to plan a trip in advance but
             the weather forecast couldn't cover that far ahead? Use our NASA
-            data-powered weather predictor. We use statistical data from the
+            data-powered climate predictor. We use statistical data from the
             last 30 years and climate-change-aware adjustments to give an
             approximation of what Earth is up to on that day or during those
             days.</p>
@@ -81,28 +84,43 @@
                 <br>
                 <div class="glass-panel">
                     <div id="results" class="p-3">
-                        <h2>Results</h2>
-                        <div id="resultsContent">No results yet. Select a date
-                            and location, then click "Predict".</div>
+                        <h1>Results</h1>
+                        <br>
+                        <div class="row">
+                            <div class="col-12 col-md-5">
+                                <div id="resultsContent">No results yet. Select
+                                    a date
+                                    and location, then click "Predict".</div>
+                            </div>
+                            <div class="col-12 col-md-7">
+                                <canvas id="resultsChart"
+                                    style="max-height: 300px;"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <br>
                 <div class="glass-panel">
                     <div id="results" class="p-3">
                         <h2>Behind the Scenes</h2>
-                        <div id="behindScenesContent">We combine NASA's
-                            historical
-                            daily climate records (POWER API), satellite-derived
-                            observations, and multi-year climatology to produce
-                            short-term temperature estimates. The system uses
-                            lightweight statistical models that learn local
-                            seasonal patterns and compare them to the recent
-                            historical distribution to produce a prediction and
-                            a simple confidence score. Note: this is an
-                            experimental, data-driven estimate — it does not
-                            replace operational forecasts and has limited skill
-                            for very long-range dates or locations with sparse
-                            historical records. It does NOT predict the future
+                        <div id="behindScenesContent">This app fetches daily
+                            temperature and precipitationrecords from the NASA
+                            POWER API for the
+                            chosen location (2000-2025). For single dates, it
+                            filters the same calendar day across all years to
+                            compute the historical mean, while running linear
+                            regression on the entire dataset to estimate climate
+                            trends (how temperatures and precipitation have
+                            changed over time). The prediction combines the
+                            regression
+                            trend-line with historical variability (standard
+                            deviation) to produce a climate-aware estimate. The
+                            visualization shows your selected day's temperatures
+                            over time with the predicted value.<br> Note: this
+                            is an
+                            experimental tool — it does not replace operational
+                            weather forecasts and has limited accuracy for
+                            distant future dates. It does NOT predict the future
                             😅</div>
                     </div>
                 </div>
@@ -125,7 +143,10 @@
             </div>
         </div>
     </footer>
-    <!-- description moved into header -->
+    <!-- JavaScript modules - load in order: utilities → main app -->
+    <script src="filters.js"></script>
+    <script src="math.js"></script>
+    <script src="charts.js"></script>
     <script src="app.js" defer></script>
 </body>
 </html>
