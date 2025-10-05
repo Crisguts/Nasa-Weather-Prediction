@@ -11,8 +11,9 @@ let temperatureChart = null;
  * @param {Array} historicalTemps - Array of temperature values
  * @param {Number} predictedTemp - Predicted temperature from regression
  * @param {Number} avgTemp - Average of historical temps
+ * @param {Number} targetYear - Year of prediction (defaults to current year if not provided)
  */
-function createTemperatureChart(historicalTemps, predictedTemp, avgTemp) {
+function createTemperatureChart(historicalTemps, predictedTemp, avgTemp, targetYear = null) {
     const canvas = document.getElementById('resultsChart');
     const ctx = canvas.getContext('2d');
 
@@ -20,6 +21,9 @@ function createTemperatureChart(historicalTemps, predictedTemp, avgTemp) {
     if (temperatureChart) {
         temperatureChart.destroy();
     }
+
+    // Get the prediction year - use current year if not provided
+    const predictionYear = targetYear || new Date().getFullYear();
 
     // Create year labels (e.g., 2000-2024 for 25 data points)
     const currentYear = new Date().getFullYear();
@@ -56,19 +60,22 @@ function createTemperatureChart(historicalTemps, predictedTemp, avgTemp) {
                     fill: false
                 },
                 {
-                    label: 'Predicted (2025)',
+                    label: `Predicted (${predictionYear})`,
                     data: [...Array(years.length - 1).fill(null), predictedTemp],
                     borderColor: 'rgba(255, 99, 132, 1)',
                     backgroundColor: 'rgba(255, 99, 132, 0.8)',
-                    borderWidth: 0,
-                    pointRadius: 8,
-                    pointStyle: 'star'
+                    borderWidth: 3,
+                    pointRadius: 10,
+                    pointStyle: 'star',
+                    // Add text annotation to make it more visible
+                    pointHoverRadius: 12,
+                    pointHoverBorderWidth: 4
                 }
             ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: true,
@@ -80,9 +87,33 @@ function createTemperatureChart(historicalTemps, predictedTemp, avgTemp) {
                 },
                 title: {
                     display: true,
-                    text: 'Temperature Trend',
+                    text: `Temperature Trend (Prediction: ${predictedTemp.toFixed(1)}°C)`,
                     color: 'rgba(255, 255, 255, 0.9)',
                     font: { size: 14 }
+                },
+                subtitle: {
+                    display: true,
+                    text: ['This chart shows how temperatures on this calendar day',
+                        'have changed over past years (blue dots),',
+                        'the historical average (yellow line),',
+                        'and our prediction for your selected date (red star).'],
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    font: { size: 13 },
+                    padding: { top: 10, bottom: 15 }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y.toFixed(1) + '°C';
+                            }
+                            return label;
+                        }
+                    }
                 }
             },
             scales: {
@@ -168,7 +199,7 @@ function createRangeChart(temps, avgTemp) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     display: false
@@ -178,6 +209,16 @@ function createRangeChart(temps, avgTemp) {
                     text: `Temperature Distribution (Avg: ${avgTemp.toFixed(1)}°C)`,
                     color: 'rgba(255, 255, 255, 0.9)',
                     font: { size: 14 }
+                },
+                subtitle: {
+                    display: true,
+                    text: ['This histogram shows how often different temperatures occurred',
+                        'during your selected date range.',
+                        'Taller bars mean those temperatures happened more frequently.',
+                        'The average temperature is shown in the title.'],
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    font: { size: 13 },
+                    padding: { top: 10, bottom: 15 }
                 }
             },
             scales: {

@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
 
                 // Create chart with historical data
-                createTemperatureChart(filteredTemps, predictedTemp, avgTemp);
+                createTemperatureChart(filteredTemps, adjustedTemp, avgTemp, targetYear);
 
             } else if (mode === 'range') {
                 // For range mode, use average directly (no regression)
