@@ -154,8 +154,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
             //if we work with one date/day
             if (mode === 'single') {
-                // Use linear regression to project the temp for that exact date
-                predictedTemp = calcLinearRegression(temps, date); //math.js file
+
+                // Create an object from the filtered temps array to use with calcLinearRegression
+                const filteredTempObj = {};
+                const currentYear = new Date().getFullYear();
+                // Create synthetic keys (YYYYMMDD) for each temperature in the filtered array
+                // This preserves the year information which is needed for the regression calculation
+                for (let i = 0; i < filteredTemps.length; i++) {
+                    const yearForKey = currentYear - filteredTemps.length + i;
+                    const monthDay = date.substring(4, 8); // Extract MMDD part
+                    filteredTempObj[`${yearForKey}${monthDay}`] = filteredTemps[i];
+                }
+                // Use linear regression on filtered temps (same day across years) instead of all temps
+                predictedTemp = calcLinearRegression(filteredTempObj, date); //math.js file
+
 
                 // Parse YYYYMMDD to get year difference (to add linear adjustment per year)
                 const targetYear = parseInt(date.substring(0, 4));
@@ -182,8 +194,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 result.innerHTML = '';
                 result.innerHTML = `
                     <h3>Weather Prediction for ${date}</h3>
-                    <p>Predicted High: ${tempDisplay}°C ± ${stdevDisplay}°C</p>
+                    <br>
+                    <p>Predicted High Estimate: ${tempDisplay}°C ± ${stdevDisplay}°C</p>
                     <p>Chance of Rain: ${rainChance}%</p>
+                    <br>
+                    <p>Please keep in mind that weather predictions are not always accurate. 
+                    This model provides 60-75 % accuracy based on satellite data and mathematical statistics.</p>
                 `;
 
                 // Create chart with historical data
