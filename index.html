@@ -6,12 +6,12 @@
     <title>NASA Climate</title>
     <!-- Bootstrap CSS (optional, helps with layout) -->
     <!-- Use the background image as a favicon (browser will scale) -->
-    <link rel="icon" href="/spacebg.jpg" type="image/jpeg">
-    <link rel="icon" href="/spacebg.jpg" type="image/png">
+    <link rel="icon" href="/assets/spacebg.jpg" type="image/jpeg">
+    <link rel="icon" href="/assets/spacebg.jpg" type="image/png">
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet" integrity="sha384-" crossorigin="anonymous">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
     <script
@@ -30,7 +30,7 @@
     </header>
     <!-- Full-screen spinner overlay (hidden by default) -->
     <div id="spinnerOverlay" style="display: none;">
-        <img id="spinner" src="./spinner.gif" alt="Loading" />
+        <img id="spinner" src="/assets/spinner.gif" alt="Loading" />
     </div>
     <main class="container main-area">
         <div class="row justify-content-center">
@@ -141,10 +141,12 @@
             </div>
         </div>
     </footer>
-    <!-- JavaScript modules -->
-    <script src="filters.js"></script>
-    <script src="math.js"></script>
-    <script src="charts.js"></script>
-    <script src="app.js" defer></script>
+    <!-- JavaScript modules - load in order: utilities → main app -->
+    <script src="js/filters.js"></script>
+    <script src="js/math.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js" defer></script>
+</body>
+</html>
 </body>
 </html>
