@@ -14,6 +14,8 @@ body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     color: #e6eef8;
     background: url('../assets/spacebg.jpg') center/cover fixed no-repeat;
+    /* Fallback in case the above path doesn't work */
+    background-image: url('../assets/spacebg.jpg'), url('https://crisguts.github.io/Nasa-Weather-Prediction/assets/spacebg.jpg');
 }
 
 /* layout */
