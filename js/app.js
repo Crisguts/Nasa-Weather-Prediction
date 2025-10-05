@@ -190,18 +190,38 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log("Adjusted Temperature:", adjustedTemp);
                 console.log("Predicted Temperature:", predictedTemp);
 
-                // Chance of rain — percent of rainy days near that date
-                const rainyDays = filteredRain.filter(v => v > 0.5).length;
-                rainChance = Math.round((rainyDays / filteredRain.length) * 100);
+                // Chance of rain — percent of rainy days near that date with a more climate-adaptive calculation
+                // Create a small weighting factor based on year to account for climate trends
+                let weightedRainCount = 0;
+                let weightSum = 0;
+
+                // Weight recent years more heavily than older years
+                for (let i = 0; i < filteredRain.length; i++) {
+                    const weight = 0.7 + 0.3 * (i / filteredRain.length); // Weights from 0.7 to 1.0
+                    if (filteredRain[i] > 0.5) {
+                        weightedRainCount += weight;
+                    }
+                    weightSum += weight;
+                }
+
+                // Calculate rain chance using weighted values
+                rainChance = Math.round((weightedRainCount / weightSum) * 100);
 
                 // Validate results before display
                 const tempDisplay = !isNaN(adjustedTemp) ? adjustedTemp.toFixed(1) : avgTemp.toFixed(1);
                 const stdevDisplay = !isNaN(stdev) ? stdev.toFixed(1) : '?';
 
+
+                const year = parseInt(date.substring(0, 4));
+                const month = parseInt(date.substring(4, 6));
+                const day = parseInt(date.substring(6, 8));
+
+                const predictionDate = new Date(year, month, day);
+
                 const result = document.getElementById('resultsContent');
                 result.innerHTML = '';
                 result.innerHTML = `
-                    <h3>Weather Prediction for ${date}</h3>
+                    <h3>Weather Prediction for ${predictionDate.toDateString()}</h3>
                     <br>
                     <p>Predicted High Estimate: ${tempDisplay}°C ± ${stdevDisplay}°C</p>
                     <p>Chance of Rain: ${rainChance}%</p>
@@ -214,15 +234,41 @@ document.addEventListener('DOMContentLoaded', function () {
                 createTemperatureChart(filteredTemps, adjustedTemp, avgTemp, targetYear, slopeValue, graphableIntercept);
 
             } else if (mode === 'range') {
-                // For range mode, use average directly (no regression)
-                const rainyDays = filteredRain.filter(v => v > 0.5).length;
-                rainChance = Math.round((rainyDays / filteredRain.length) * 100);
+                // For range mode, use weighted calculation to improve accuracy
+                // Create a small weighting factor based on rainfall amount, not just yes/no
+                let weightedRainCount = 0;
+                let weightSum = 0;
+
+                // Weight days with higher rainfall more heavily
+                for (let i = 0; i < filteredRain.length; i++) {
+                    const weight = 1.0;
+                    const rainBoost = Math.min(filteredRain[i] / 2, 0.5); // Up to 0.5 bonus for heavy rain
+                    if (filteredRain[i] > 0.5) {
+                        weightedRainCount += (weight + rainBoost);
+                    }
+                    weightSum += weight;
+                }
+
+                // Calculate rain chance using weighted values
+                rainChance = Math.round((weightedRainCount / weightSum) * 100);
+
+                const year = parseInt(start.substring(0, 4));
+                const month = parseInt(start.substring(4, 6));
+                const day = parseInt(start.substring(6, 8));
+
+                const predictionDate = new Date(year, month, day);
+
+                const year2 = parseInt(end.substring(0, 4));
+                const month2 = parseInt(end.substring(4, 6));
+                const day2 = parseInt(end.substring(6, 8));
+
+                const predictionDate2 = new Date(year2, month2, day2);
 
 
                 const result = document.getElementById('resultsContent');
                 result.innerHTML = '';
                 result.innerHTML = `
-                    <h3>Weather Prediction for ${start} → ${end}</h3>
+                    <h3>Weather Prediction for ${predictionDate2.toDateString()} -  ${predictionDate2.toDateString()}</h3>
                     <p>Average High: ${avgTemp.toFixed(1)}°C</p>
                     <p>Chance of Rain: ${rainChance}%</p>
                 `;
