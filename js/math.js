@@ -22,34 +22,46 @@ function calcLinearRegression(data, searchStringDate) { //data being all temps f
 
 
     // Compute Linear Regression (slope + intercept)
-    function linearRegression(x, y) {
-        const n = x.length;
-        const meanX = x.reduce((a, b) => a + b) / n;
-        const meanY = y.reduce((a, b) => a + b) / n;
-
-        let num = 0;
-        let den = 0;
-
-        for (let i = 0; i < n; i++) {
-            num += (x[i] - meanX) * (y[i] - meanY);
-            den += (x[i] - meanX) ** 2;
-        }
-
-        const m = num / den;
-        const b = meanY - m * meanX;
-
-        return { slope: m, intercept: b }; // slope is how steep the trend is, C per year, intercept is where it crosses Y axis
-    }
-
     const { slope, intercept } = linearRegression(x, y);
     console.log("Slope (°C/year):", slope);
     console.log("Intercept:", intercept);
+    console.log("Search year:", searchYear);
 
     // Predict from search year
     const predictedValue = slope * searchYear + intercept;
     console.log(`Predicted value for ${searchStringDate} (year ${searchYear}):`, predictedValue);
 
-    return predictedValue;
+    return { predictedValue, slope, intercept };
+}
+
+function linearRegression(x, y) {
+    const n = x.length;
+    const meanX = x.reduce((a, b) => a + b) / n;
+    const meanY = y.reduce((a, b) => a + b) / n;
+
+    let num = 0;
+    let den = 0;
+
+    for (let i = 0; i < n; i++) {
+        num += (x[i] - meanX) * (y[i] - meanY);
+        den += (x[i] - meanX) ** 2;
+    }
+
+    const m = num / den;
+    const b = meanY - m * meanX;
+
+    return { slope: m, intercept: b }; // slope is how steep the trend is, C per year, intercept is where it crosses Y axis
+}
+
+/**
+ * Calculate the y value for a given x value using the linear equation y = mx + b.
+ * @param {Number} x - The x coordinate.
+ * @param {Number} slope - The slope of the line.
+ * @param {Number} intercept - The y-intercept of the line.
+ * @returns {Number} The calculated y value.
+ */
+function calculateY(x, slope, intercept) {
+    return slope * x + intercept;
 }
 
 /**

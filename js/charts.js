@@ -13,7 +13,7 @@ let temperatureChart = null;
  * @param {Number} avgTemp - Average of historical temps
  * @param {Number} targetYear - Year of prediction (defaults to current year if not provided)
  */
-function createTemperatureChart(historicalTemps, predictedTemp, avgTemp, targetYear = null) {
+function createTemperatureChart(historicalTemps, predictedTemp, avgTemp, targetYear = null, slope, intercept) {
     const canvas = document.getElementById('resultsChart');
     const ctx = canvas.getContext('2d');
 
@@ -70,6 +70,14 @@ function createTemperatureChart(historicalTemps, predictedTemp, avgTemp, targetY
                     // Add text annotation to make it more visible
                     pointHoverRadius: 12,
                     pointHoverBorderWidth: 4
+                },
+                {
+                    label: 'Trend Line',
+                    data: years.map((year, index) => intercept + slope * index),
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: false
                 }
             ]
         },

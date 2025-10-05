@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const predictBtn = document.getElementById('predictBtn');
 
     //Variables 
-    const startDate = "20000101"; // 2000/01/01
+    const startDate = "1981101"; // 2000/01/01
     const endDate = "20251001"; // today
 
     var latitude = 45.5;
@@ -166,7 +166,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     filteredTempObj[`${yearForKey}${monthDay}`] = filteredTemps[i];
                 }
                 // Use linear regression on filtered temps (same day across years) instead of all temps
-                predictedTemp = calcLinearRegression(filteredTempObj, date); //math.js file
+                const { predictedValue, slope, intercept } = calcLinearRegression(filteredTempObj, date); //math.js file
+                console.log("Predicted Value from Regression:", predictedValue);
+                predictedTemp = Number(predictedValue);
+                let slopeValue = Number(slope); // C per year increase
+                let interceptValue = Number(intercept);
+                let startYear = parseInt(startDate.substring(0, 4));
+                let graphableIntercept = calculateY(startYear, slopeValue, interceptValue);
 
 
                 // Parse YYYYMMDD to get year difference (to add linear adjustment per year)
@@ -181,6 +187,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Combine the regression trend with variability adjustment
                 adjustedTemp = predictedTemp + stdev * 0.1 * yearDiff;
+                console.log("Adjusted Temperature:", adjustedTemp);
+                console.log("Predicted Temperature:", predictedTemp);
 
                 // Chance of rain — percent of rainy days near that date
                 const rainyDays = filteredRain.filter(v => v > 0.5).length;
@@ -203,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
 
                 // Create chart with historical data
-                createTemperatureChart(filteredTemps, adjustedTemp, avgTemp, targetYear);
+                createTemperatureChart(filteredTemps, adjustedTemp, avgTemp, targetYear, slopeValue, graphableIntercept);
 
             } else if (mode === 'range') {
                 // For range mode, use average directly (no regression)
