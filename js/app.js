@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
                 const year = parseInt(date.substring(0, 4));
-                const month = parseInt(date.substring(4, 6));
+                const month = parseInt(date.substring(4, 6)) - 1; // Subtract 1 because JS months are 0-indexed (0-11)
                 const day = parseInt(date.substring(6, 8));
 
                 const predictionDate = new Date(year, month, day);
@@ -253,13 +253,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 rainChance = Math.round((weightedRainCount / weightSum) * 100);
 
                 const year = parseInt(start.substring(0, 4));
-                const month = parseInt(start.substring(4, 6));
+                const month = parseInt(start.substring(4, 6)) - 1; // Subtract 1 because JS months are 0-indexed (0-11)
                 const day = parseInt(start.substring(6, 8));
 
                 const predictionDate = new Date(year, month, day);
 
                 const year2 = parseInt(end.substring(0, 4));
-                const month2 = parseInt(end.substring(4, 6));
+                const month2 = parseInt(end.substring(4, 6)) - 1; // Subtract 1 because JS months are 0-indexed (0-11)
                 const day2 = parseInt(end.substring(6, 8));
 
                 const predictionDate2 = new Date(year2, month2, day2);
