@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const result = document.getElementById('resultsContent');
                 result.innerHTML = '';
                 result.innerHTML = `
-                    <h3>Weather Prediction for ${predictionDate2.toDateString()} -  ${predictionDate2.toDateString()}</h3>
+                    <h3>Weather Prediction for ${predictionDate.toDateString()} -  ${predictionDate2.toDateString()}</h3>
                     <p>Average High: ${avgTemp.toFixed(1)}°C</p>
                     <p>Chance of Rain: ${rainChance}%</p>
                 `;
